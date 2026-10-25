@@ -1,3 +1,7 @@
+# NOT FINISHED! WORK IN  PROGRESS
+# this repository is only public for sharing files, but the tutorial has not been finished yet
+# you may of course use the files present, they are fully operational.
+
 # Raspberry-Pi-4-5-MediaServer
 
 This is a beginner project for anyone that has a Raspberry Pi or any other computer with whicj they would like to turn into an automatic MediaServer!
