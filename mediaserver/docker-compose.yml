@@ -1,0 +1,165 @@
+version: '3.8'
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./mediaserver/config/jellyfin:/config
+      - YOURDATAPATH:/data/media      #Replace "YOURDATAPATH" by the path to your media library, NOT on you pi's SD card 
+    ports:
+      - 8096:8096
+    restart: unless-stopped
+
+#If you prefer Plex, you can just unComment the following code, 
+#i recommend you comment/delete the jellyfin part above for better performance
+
+  # plex:
+  #   image: lscr.io/linuxserver/plex:latest
+  #   container_name: plex
+  #   network_mode: host
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - VERSION=docker
+  #   volumes:
+  #     - ./config/plex:/config
+  #     - /data/media:/data/media
+  #   restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ./mediaserver/config/sonarr:/config
+      - /data:/data   #Any HDD/SDD connected to the pi should figure in the data folder, verify that though
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ./mediaserver/config/radarr:/config
+      - /data:/data   #Any HDD/SDD connected to the pi should figure in the data folder, verify that though
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+  
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./mediaserver/gluetun/YOURVPNCONFIGFILE:/gluetun        #Replace with your openvpn config file, see tutorial for further instruvtions
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=openvpn
+      - OPENVPN_USER=${VPN_USER}
+      - OPENVPN_PASSWORD=${VPN_PASSWORD}
+      - DNS_SERVER=off
+      - DNS_UPSTREAM_RESOLVER_TYPE=plain
+      - DNS_UPSTREAM_PLAIN_ADDRESSES=1.1.1.1:53
+      - OPENVPN_CUSTOM_CONFIG=/gluetun/custom.ovpn
+
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+      - 9117:9117
+      - 8191:8191
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ./mediaserver/config/jackett:/config
+      - /data/torrents:/downloads         #If your pi has a data folder, nothing to do. Again, verify that your data folder is the path that your Pi has set for HHDs and SSDs
+    restart: unless-stopped
+
+  qbittorrent:
+    build:
+      context: .
+      dockerfile: Dockerfile.qbittorrent
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - WEBUI_PORT=8080
+    volumes:
+      - ./mediaserver/config/qbittorrent:/config
+      - /data/torrents:/data/torrents   #same as jackett's comment
+    
+    restart: unless-stopped
+      
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Asia/Tashkent
+      - PORT=5055 #optional
+    ports:
+      - 5055:5055
+    volumes:
+      - ./mediaserver/config/seerr:/app/config
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+  
+  # overseerr:
+  #   image: lscr.io/linuxserver/overseerr:latest
+  #   container_name: overseerr
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Europe/London
+  #   volumes:
+  #     - ./config/overseerr:/config
+  #   ports:
+  #     - 5055:5055
+  #   restart: unless-stopped
+  # flaresolverr:
+  #   # DockerHub mirror flaresolverr/flaresolverr:latest
+  #   image: ghcr.io/flaresolverr/flaresolverr:latest
+  #   container_name: flaresolverr
+  #   network_mode: "service:gluetun"
+  #   environment:
+  #     - LOG_LEVEL=${LOG_LEVEL:-info}
+  #     - LOG_HTML=${LOG_HTML:-false}
+  #     - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+  #     - TZ=Europe/London
+  #   restart: unless-stopped
