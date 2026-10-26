@@ -6,7 +6,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ=${TZ}
     volumes:
       - ./mediaserver/config/jellyfin:/config
       - YOURDATAPATH:/data/media      #Replace "YOURDATAPATH" by the path to your media library, NOT on you pi's SD card 
@@ -36,7 +36,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/London
+      - TZ=${TZ}
     volumes:
       - ./mediaserver/config/sonarr:/config
       - /data:/data   #Any HDD/SDD connected to the pi should figure in the data folder, verify that though
@@ -50,7 +50,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/London
+      - TZ=${TZ}
     volumes:
       - ./mediaserver/config/radarr:/config
       - /data:/data   #Any HDD/SDD connected to the pi should figure in the data folder, verify that though
@@ -93,7 +93,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/London
+      - TZ=${TZ}
     volumes:
       - ./mediaserver/config/jackett:/config
       - /data/torrents:/downloads         #If your pi has a data folder, nothing to do. Again, verify that your data folder is the path that your Pi has set for HHDs and SSDs
@@ -108,7 +108,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/London
+      - TZ=${TZ}
       - WEBUI_PORT=8080
     volumes:
       - ./mediaserver/config/qbittorrent:/config
@@ -122,7 +122,7 @@ services:
     container_name: seerr
     environment:
       - LOG_LEVEL=debug
-      - TZ=Asia/Tashkent
+      - TZ=${TZ}
       - PORT=5055 #optional
     ports:
       - 5055:5055
@@ -152,14 +152,14 @@ services:
   #   ports:
   #     - 5055:5055
   #   restart: unless-stopped
-  # flaresolverr:
-  #   # DockerHub mirror flaresolverr/flaresolverr:latest
-  #   image: ghcr.io/flaresolverr/flaresolverr:latest
-  #   container_name: flaresolverr
-  #   network_mode: "service:gluetun"
-  #   environment:
-  #     - LOG_LEVEL=${LOG_LEVEL:-info}
-  #     - LOG_HTML=${LOG_HTML:-false}
-  #     - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
-  #     - TZ=Europe/London
-  #   restart: unless-stopped
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    network_mode: "service:gluetun"
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=${TZ}
+    restart: unless-stopped
