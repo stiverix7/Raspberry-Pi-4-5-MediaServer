@@ -24,6 +24,30 @@ A. Firstly, Open VsCode on your computer and press __Ctrl+Shift+P__ , select "co
 B. Then enter your pi's ip adress (Wich is found by using __hostname -I__ on your remote) and press enter. The select either __/home__ or __/etc__. 
   A popup will appear, press "connect".
 
-C. A new window oppened, enter your password. After that press Congratulations! You are now connected to your pi and can begin your media server!
+C. A new window opened, enter your password. After that press that little file icon -> __Open folder__ -> __OK__ then enter your password again. Congratulations! You are now connected to your pi and can begin your media server!
+
+
+## Step2:
+
+Let's now import the docker-compose.yml, i suggest you take a quick look at their tutorial on how to use docker compose, as you will greatly benefit from it: (link)
+
+A. On this github page, press the green __Code__ button -> __Download zip__ and extract that zip file. 
+
+B. Create a new folder on your remote, ideally directly on your user, but it HAS to be on the pi's SD card. All this via VS code of course as we connected all of the remote's files directly :)
+  Think of VS code as a direct window to your pi.
+
+C. Just drag and drop the extracted github folder on the new folder in VS code, wait a bit then all is transfered! We will now do a thiiiiny bit of coding, but it's simple don't worry ;)
+
+
+## Step2:
+
+So you transfered all your files, you will notice there is not much, just a docker compose yaml, a script and a .env, But you will see that as soon as you start your containers a whole architecture of folders will be made automatically, those will be the __config__ folders, but we'l come back to them mater.
+
+A. see that terminal button on the top right corner? press that -> new terminal. This is now a direct terminal to your remote!
+
+B. We will start simple, we just want to go in the media server to prepare the terminal for later. Run this command:
+
+    ```bash
+docker compose up -d
 
 
